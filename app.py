@@ -10,7 +10,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 cors = CORS(app)
 
-openai.api_key = os.environ.get('OPENAI_SECRET')
+openai.api_key = os.environ.get('OPENAI_SECRET') 
 
 @app.route('/', methods=['GET'])
 
@@ -49,7 +49,7 @@ def openai_endpoint():
 # Run the app
 if __name__ == "__main__":
     app.run(debug=True) 
-    
+
 
 
 
