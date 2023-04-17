@@ -10,7 +10,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 cors = CORS(app)
 
-openai.api_key = "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" 
+openai.api_key = "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" 
 
 
 @app.route('/', methods=['GET'])
