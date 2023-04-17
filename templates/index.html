@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <!-- ############ -->
+        <script src="https://kit.fontawesome.com/19664b3bc8.js" crossorigin="anonymous"></script>
+        <!-- ############ -->
+        <!--  This Above line of script src we will give for the icon import before using the "icon class" we must have to import this line -->
+
+        <title>GPTEvolve</title>
+        <!-- <link rel="icon" href="favicon.ico"> -->
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+
+        
+        <link rel="stylesheet" href="/path/to/styles/a11y-dark.min.css">
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/a11y-dark.min.css"></script>
+       
+        <!-- <script src="../highlight.min.js"></script> -->
+        <!-- <script>hljs.highlightAll();</script> -->
+        <script src="/static/highlight.site.pack.js"></script>
+        <script src="{{url_for('static', filename='js/highlight.pack.js')}}"></script>
+        <script src="static/js/highlight.js"></script>
+        <script>hljs.highlightAll();</script>
+
+    <style>
+        body{
+    
+            background:#30303d;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <script>hljs.initHighlightingOnLoad();</script>
+
+
+    <div  class="container">
+        <div class="row">
+            <div class="">
+                <div class="card" style="width: 83vw;">
+                    <div class="card-header">
+                        <h3 class="text-center">GPT Evolution</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="prompt-form">
+                            <div class="form-group" style="position: relative; outline: none;">
+                                <label for="prompt-text">Enter Your Search:</label>
+                                <input type="text" class="form-control" name="prompt-text" id="prompt-text"
+                                    placeholder="Enter Your Search here" style="width: calc(100% - 40px)" >
+                                    <!-- <img id="img1" src="On.png" alt="" height="20px" >
+                                    <img src="off.png" alt="" height="20px"> -->
+                                    <i class="fa fa-microphone microphone-ico " id="microphone" style="position: absolute;
+                                    right: 10px;
+                                    top: 3.7vw;
+                                    padding: 2px;
+                                    border-left: 1px solid #d1d5db;
+                                    cursor: pointer;
+                                    "onclick="toggleRecognition()"></i>
+                            </div>
+                            <div id="result"></div>
+                            <button type="submit" class="btn btn-primary btn-block"
+                            id="generate-button">Generate</button>
+                            
+                        </form>
+                    </div>
+                        <br><br>
+                        <!-- style= "margin-left: 67vh; margin-top: 3vh; -->
+                        <div style="background-color: black;" class="copy-t">
+                            <button>
+                                <i class="fa-solid fa-clipboard fa-18xl" style= "left: 7vh;"></i> <!-- that our copy logo-->
+                            </button>
+                            <br>
+                            <div id="response" style="color: white;bottom: 0;top: 0; box-sizing: border-box; height: 100%; justify-content: center; align-items: center; padding: 2rem;" >
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+
+
+
+
+        let recognition;
+        let isRecognitionActive = false;
+        let transcript = "";
+  
+        function startRecognition() {
+          recognition = new webkitSpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+  
+          recognition.onresult = (event) => {
+            const result = event.results[event.resultIndex];
+            const newTranscript = result[0].transcript;
+            // transcript += newTranscript + " ";
+            // document.getElementById("result").textContent = newTranscript;
+            var prompt_text = document.getElementById('prompt-text');
+            prompt_text.value = newTranscript;
+          };
+  
+          recognition.onerror = (event) => {
+            console.error(event.error);
+          };
+  
+          recognition.onend = () => {
+            console.log("Speech recognition stopped.");
+            document.getElementById("microphone").classList.remove("active");
+            isRecognitionActive = false;
+          };
+  
+          recognition.start();
+          document.getElementById("microphone").classList.add("active");
+          isRecognitionActive = true;
+        }
+  
+        function stopRecognition() {
+          if (recognition) {
+            recognition.stop();
+          }
+        }
+  
+        function toggleRecognition() {
+          if (isRecognitionActive) {
+            stopRecognition();
+          } else {
+            startRecognition();
+          }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        $(function () {
+            $('#prompt-form').submit(function (e) {
+                e.preventDefault();
+                var promptText = $('#prompt-text').val();
+                if (promptText) {
+                    $.ajax({
+                        url: "/openai",
+                        type: "POST",
+                        data: JSON.stringify(promptText),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (responseData) {
+                            // Display the response text
+                            console.log(responseData);
+                            $("#response").text(responseData.response);
+                        },
+                        error: function (jqXHR, textStatus, errorThrown) {
+                            console.log("Error:", textStatus, errorThrown);
+                        }
+                    });
+                } else {
+                    $('#response').html('<p>Please enter a prompt.</p>');
+                }
+            });
+        });
+
+
+
+        // this is function for copy code to clipbord
+
+        let copyText = document.querySelector(".copy-t");
+        copyText.querySelector("button").addEventListener("click",function(){
+            let text = copyText.querySelector("pre").innerText;
+            if(!navigator.clipboard){
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                textArea.remove();
+                alert("Copied to clipboard");
+            }else{
+                navigator.clipboard.writeText(text).then(function(){
+                    alert("Copied to clipboard");
+                },function(err){
+                    console.log("Something went wrong",err);
+                })
+            }
+        });
+
+
+
+
+
+
+
+        // <script>
+        // let recognition;
+        // let isRecognitionActive = false;
+        // let transcript = "";
+  
+        // function startRecognition() {
+        //   recognition = new webkitSpeechRecognition();
+        //   recognition.continuous = true;
+        //   recognition.interimResults = true;
+  
+        //   recognition.onresult = (event) => {
+        //     const result = event.results[event.resultIndex];
+        //     const newTranscript = result[0].transcript;
+        //     // transcript += newTranscript + " ";
+        //     document.getElementById("#prompt-text").textContent = newTranscript;
+        //   };
+  
+        //   recognition.onerror = (event) => {
+        //     console.error(event.error);
+        //   };
+  
+        //   recognition.onend = () => {
+        //     console.log("Speech recognition stopped.");
+        //     document.getElementById("microphone").classList.remove("active");
+        //     isRecognitionActive = false;
+        //   };
+  
+        //   recognition.start();
+        //   document.getElementById("microphone").classList.add("active");
+        //   isRecognitionActive = true;
+        // }
+  
+        // function stopRecognition() {
+        //   if (recognition) {
+        //     recognition.stop();
+        //   }
+        // }
+  
+        // function toggleRecognition() {
+        //   if (isRecognitionActive) {
+        //     stopRecognition();
+        //   } else {
+        //     startRecognition();
+        //   }
+        // }
+    // </script>
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
+
+
+
+
