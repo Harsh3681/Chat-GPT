@@ -12,6 +12,7 @@ cors = CORS(app)
 
 openai.api_key = os.environ.get('OPENAI_SECRET') 
 
+
 @app.route('/', methods=['GET'])
 
 def index():
